@@ -1,0 +1,31 @@
+from urllib.parse import urlparse
+import os
+from bs4 import BeautifulSoup
+import requests
+r = requests.get('https://www.xiachufang.com', headers={'User-agent': 'Mozilla/5.0 (Windows NT 10.0;'
+                                            ' Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+                                            ' Chrome/92.0.4515.159 Safari/537.36'})
+soup = BeautifulSoup(r.text, 'html.parser')
+
+# 文件下载地址
+
+File_path = os.path.join(os.curdir, 'imges')
+if not os.path.isdir(File_path):
+    os.mkdir(File_path)
+url= []
+for i in soup.select('img'):
+    if i.has_attr('data-src'):
+        url.append(i.attrs['data-src'])
+    elif i.has_attr('src'):
+        url.append(i.attrs['src'])
+url = url[:-2]
+for links in url:
+    link = links.split('?')[0]
+    o = urlparse(links)
+    Image_name = o.path[1:]
+    resp = requests.get(link)
+    Image_path = os.path.join(File_path, Image_name)
+
+    with open(Image_path, 'wb') as a:
+        for chunk in resp:
+            a.write(chunk)
